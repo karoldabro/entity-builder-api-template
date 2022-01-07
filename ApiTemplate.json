@@ -43,8 +43,41 @@
                             "name": "name",
                             "allowNull": false,
                             "cast": "",
-                            "collation": "",
-                            "comment": "User name",
+                            "collation": "User name",
+                            "comment": "",
+                            "fillable": true,
+                            "hidden": false,
+                            "included": true,
+                            "length": "",
+                            "useCurrent": false,
+                            "unsigned": false,
+                            "value": "",
+                            "ruleManager": {
+                                "list": [
+                                    {
+                                        "name": "string",
+                                        "value": ""
+                                    },
+                                    {
+                                        "name": "required",
+                                        "value": ""
+                                    }
+                                ]
+                            },
+                            "seed": {
+                                "unique": false,
+                                "type": "raw",
+                                "value": "",
+                                "parameter": ""
+                            },
+                            "type": "string"
+                        },
+                        {
+                            "name": "email",
+                            "allowNull": false,
+                            "cast": "",
+                            "collation": "User email address",
+                            "comment": "",
                             "fillable": true,
                             "hidden": false,
                             "included": true,
@@ -63,48 +96,15 @@
                                         "value": ""
                                     },
                                     {
-                                        "name": "max",
-                                        "value": "150"
-                                    }
-                                ]
-                            },
-                            "seed": {
-                                "unique": false,
-                                "type": "property",
-                                "value": "firstName",
-                                "parameter": ""
-                            },
-                            "type": "string"
-                        },
-                        {
-                            "name": "email",
-                            "allowNull": false,
-                            "cast": "",
-                            "collation": "",
-                            "comment": "",
-                            "fillable": true,
-                            "hidden": false,
-                            "included": true,
-                            "length": "",
-                            "useCurrent": false,
-                            "unsigned": false,
-                            "value": "",
-                            "ruleManager": {
-                                "list": [
-                                    {
-                                        "name": "required",
-                                        "value": ""
-                                    },
-                                    {
                                         "name": "email",
                                         "value": ""
                                     }
                                 ]
                             },
                             "seed": {
-                                "unique": true,
-                                "type": "property",
-                                "value": "email",
+                                "unique": false,
+                                "type": "raw",
+                                "value": "",
                                 "parameter": ""
                             },
                             "type": "string"
@@ -194,8 +194,8 @@
                 "filePattern": "${entity.name}Controller.php",
                 "nsPattern": "${project.ns}\\Http\\Controllers",
                 "pathPattern": "app/Http/Controllers",
-                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n    data.request = data.project.getLayer('Request')\n    data.repository = data.project.getLayer('Repository')\n    data.resource = data.project.getLayer('Resource')\n}\n",
-                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse {{ model.getFullName(project, entity) }};\nuse {{ request.getFullName(project, entity) }};\nuse {{ repository.getFullName(project, entity) }};\nuse {{ resource.getFullName(project, entity) }};\nuse \\Illuminate\\Http\\JsonResponse;\n\nclass {{ layer.getClassName(entity) }} extends Controller \n{\n    /** \n     * Display a listing of the resource.\n     *\n     * @return {{ resource.getClassName(entity) }}\n     */\n    public function index({{repository.getClassName(entity)}} $repository)\n    {\n        return {{ resource.getClassName(entity) }}::collection($repository->paginateAll());\n    }\n\n    /**\n     * Store a newly created resource in storage.\n     *\n     * @param {{ request.getClassName(entity) }} $request\n     * @return {{ resource.getClassName(entity) }}\n     */\n    public function store({{ request.getClassName(entity) }} $request, {{repository.getClassName(entity)}} $repository): {{ resource.getClassName(entity) }}\n    {\n        ${{ model.getClassName(entity) | lower}} = $repository->create($request->validated());\n\n        return response()->json((new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}})), 201);\n    }\n\n    /**\n     * Display the specified resource.\n     *\n     * @param {{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}\n     * @return {{ resource.getClassName(entity) }}\n     */\n    public function show({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}): {{ resource.getClassName(entity) }}\n    {\n        return new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}});\n    }\n\n    /**\n     * @OA\\Put(\n     *     path=\"/api/{{ entity.tableName }}/{{'{'}}{{ model.getClassName(entity) | lower}}}\",\n     *     summary=\"Update the {{ model.getClassName(entity) | lower}}\",\n     *     @OA\\Parameter(description=\"{{ model.getClassName(entity)}} id\", in=\"path\", name=\"{{ model.getClassName(entity) | lower}}\", required=true, @OA\\Schema(type=\"string\"), @OA\\Examples(example=\"uuid\", value=\"0006faf6-7a61-426c-9034-579f2cfcfa83\", summary=\"An UUID value.\"),),\n     *     @OA\\RequestBody(@OA\\JsonContent( {% for field in entity.fieldManager.list | selectattr('included') %}\n     *         @OA\\Property(property=\"{{ field.name }}\", type=\"{{field.type}}\", description=\"{{ item.comment }}\",),{% endfor %}\n     *     )),\n     *     @OA\\Response(response=404, description=\"Not found\"),\n     *     @OA\\Response(response=422, description=\"Validation error\"),\n     *     @OA\\Response(response=200, description=\"Updated\", @OA\\JsonContent( {% for field in entity.fieldManager.list %}{% if field.hidden === false %}\n     *         @OA\\Property(property=\"{{ field.name }}\", type=\"{{field.type}}\", description=\"{{ item.comment }}\",),{% endif %}{% endfor %}\n     *     ))\n     * )\n     *\n     * @param {{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}\n     * @param {{ request.getClassName(entity) }} $request\n     * @return {{ resource.getClassName(entity) }}\n     */\n    public function update({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}, {{ request.getClassName(entity) }} $request, {{repository.getClassName(entity)}} $repository): {{ resource.getClassName(entity) }}\n    {\n        ${{ model.getClassName(entity) | lower}} = $repository->update(${{ model.getClassName(entity) | lower}}, $request->validated());\n\n        return new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}});\n    }\n\n    /**\n     * Remove the specified resource from storage.\n     *\n     * @param {{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}\n     * @return JsonResponse\n     */\n    public function destroy({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}): JsonResponse\n    {\n        $count = ${{ model.getClassName(entity) | lower}}->delete();\n        if ($count) {\n            return response()->json({}, 201);\n        }\n        return response()->json(410);\n    }\n}",
+                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n    data.requestStore = data.project.getLayer('StoreRequest')\n    data.requestUpdate = data.project.getLayer('UpdateRequest')\n    data.repository = data.project.getLayer('Repository')\n    data.resource = data.project.getLayer('Resource')\n}\n",
+                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse {{ model.getFullName(project, entity) }};\nuse {{ requestStore.getFullName(project, entity) }};\nuse {{ requestUpdate.getFullName(project, entity) }};\nuse {{ repository.getFullName(project, entity) }};\nuse {{ resource.getFullName(project, entity) }};\nuse \\Illuminate\\Http\\JsonResponse;\n\nclass {{ layer.getClassName(entity) }} extends Controller \n{\n    /** \n     * @OA\\Get(\n     *     path=\"/api/{{ entity.tableName }}\",\n     *     summary=\"Display the list of {{ model.getClassName(entity) | lower}} items\",\n     *     @OA\\Response(response=404, description=\"Not found\"),\n     *     @OA\\Response(response=200, description=\"Ok\", @OA\\JsonContent(\n     *           @OA\\Property(property=\"data\", type=\"array\", @OA\\Items(), ref=\"#/components/schemas/{{ model.getClassName(entity)}}Resource\")\n     *     ))\n     * )\n     */\n    public function index({{repository.getClassName(entity)}} $repository)\n    {\n        return {{ resource.getClassName(entity) }}::collection($repository->paginateAll());\n    }\n\n    /**\n     * @OA\\Post(\n     *     path=\"/api/{{ entity.tableName }}\",\n     *     summary=\"Store new {{ model.getClassName(entity) | lower}}\",\n     *     @OA\\RequestBody(@OA\\JsonContent(@OA\\Schema(ref=\"#/components/schemas/{{ model.getClassName(entity)}}StoreRequest\"))),\n     *     @OA\\Response(response=422, description=\"Validation error\"),\n     *     @OA\\Response(response=201, description=\"Created\", @OA\\JsonContent(@OA\\Schema(ref=\"#/components/schemas/{{ model.getClassName(entity)}}Resource\")))\n     * )\n     */\n    public function store({{ requestStore.getClassName(entity) }} $request, {{repository.getClassName(entity)}} $repository): {{ resource.getClassName(entity) }}\n    {\n        ${{ model.getClassName(entity) | lower}} = $repository->create($request->validated());\n\n        return response()->json((new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}})), 201);\n    }\n\n    /**\n     * @OA\\Get(\n     *     path=\"/api/{{ entity.tableName }}/{{'{'}}{{ model.getClassName(entity) | lower}}}\",\n     *     summary=\"Display the {{ model.getClassName(entity) | lower}}\",\n     *     @OA\\Parameter(description=\"{{ model.getClassName(entity)}} id\", in=\"path\", name=\"{{ model.getClassName(entity) | lower}}\", required=true, @OA\\Schema(type=\"string\"), @OA\\Examples(example=\"uuid\", value=\"0006faf6-7a61-426c-9034-579f2cfcfa83\", summary=\"An UUID value.\")),\n     *     @OA\\Response(response=404, description=\"Not found\"),\n     *     @OA\\Response(response=200, description=\"Ok\", @OA\\JsonContent(@OA\\Schema(ref=\"#/components/schemas/{{ model.getClassName(entity)}}Resource\")))\n     * )\n     */\n    public function show({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}): {{ resource.getClassName(entity) }}\n    {\n        return new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}});\n    }\n\n    /**\n     * @OA\\Put(\n     *     path=\"/api/{{ entity.tableName }}/{{'{'}}{{ model.getClassName(entity) | lower}}}\",\n     *     summary=\"Update the {{ model.getClassName(entity) | lower}}\",\n     *     @OA\\Parameter(description=\"{{ model.getClassName(entity)}} id\", in=\"path\", name=\"{{ model.getClassName(entity) | lower}}\", required=true, @OA\\Schema(type=\"string\"), @OA\\Examples(example=\"uuid\", value=\"0006faf6-7a61-426c-9034-579f2cfcfa83\", summary=\"An UUID value.\")),\n     *     @OA\\RequestBody(@OA\\JsonContent(@OA\\Schema(ref=\"#/components/schemas/{{ model.getClassName(entity)}}StoreRequest\"))),\n     *     @OA\\Response(response=422, description=\"Validation error\"),\n     *     @OA\\Response(response=404, description=\"Not found\"),\n     *     @OA\\Response(response=200, description=\"Updated\", @OA\\JsonContent(@OA\\Schema(ref=\"#/components/schemas/{{ model.getClassName(entity)}}Resource\")))\n     * )\n     */\n    public function update({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}, {{ requestUpdate.getClassName(entity) }} $request, {{repository.getClassName(entity)}} $repository): {{ resource.getClassName(entity) }}\n    {\n        ${{ model.getClassName(entity) | lower}} = $repository->update(${{ model.getClassName(entity) | lower}}, $request->validated());\n\n        return new {{ resource.getClassName(entity)}}(${{ model.getClassName(entity) | lower}});\n    }\n\n    /**\n     * @OA\\Delete(\n     *     path=\"/api/{{ entity.tableName }}/{{'{'}}{{ model.getClassName(entity) | lower}}}\",\n     *     summary=\"Remove the {{ model.getClassName(entity) | lower}}\",\n     *     @OA\\Parameter(description=\"{{ model.getClassName(entity)}} id\", in=\"path\", name=\"{{ model.getClassName(entity) | lower}}\", required=true, @OA\\Schema(type=\"string\"), @OA\\Examples(example=\"uuid\", value=\"0006faf6-7a61-426c-9034-579f2cfcfa83\", summary=\"An UUID value.\")),\n     *     @OA\\Response(response=404, description=\"Not found\"),\n     *     @OA\\Response(response=410, description=\"Resource already deleted\"),\n     *     @OA\\Response(response=201, description=\"Deleted\")\n     * )\n     */\n    public function destroy({{ model.getClassName(entity) }} ${{ model.getClassName(entity) | lower}}): JsonResponse\n    {\n        $count = ${{ model.getClassName(entity) | lower}}->delete();\n        if ($count) {\n            return response()->json({}, 201);\n        }\n        return response()->json(410);\n    }\n}",
                 "dataManager": {
                     "list": []
                 }
@@ -210,7 +210,7 @@
                 "nsPattern": "${project.ns}\\Database\\Factories",
                 "pathPattern": "database/factories",
                 "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n\n    data.seedText = seed => {\n        const list = ['$faker']\n        if (seed.unique) {\n            list.push('unique()')\n        }\n\n        if (seed.type === 'property') {\n            list.push(seed.value)\n            return list.join('->')\n        }\n\n        if (seed.type === 'method') {\n            list.push(`${seed.value}(${seed.parameter})`)\n            return list.join('->')\n        }\n\n        return seed.value\n    }\n}\n",
-                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse {{ model.getFullName(project, entity) }};\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\n\nclass {{ layer.getClassName(entity) }} extends Factory\n{\n    protected $model = {{ model.getClassName(entity)}}::class;\n\n    public function definition()\n    {\n        return [ {% for field in entity.fieldManager.list %}{% if field.seed.value !== '' %}\n        '{{ field.name }}' => {{ seedText(field.seed) }},{% endif %}{% endfor %}\n        ];\n    }\n}",
+                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse {{ model.getFullName(project, entity) }};\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\n\nclass {{ layer.getClassName(entity) }} extends Factory\n{\n    protected $model = {{ model.getClassName(entity)}}::class;\n\n    public function definition()\n    {\n        return [ {% for field in entity.fieldManager.list %}{% if field.seed.value !== '' %}\n            '{{ field.name }}' => {{ seedText(field.seed) }},{% endif %}{% endfor %}\n        ];\n    }\n}",
                 "dataManager": {
                     "list": []
                 }
@@ -239,7 +239,7 @@
                 "filePattern": "${entity.name}.php",
                 "nsPattern": "${project.ns}\\Models",
                 "pathPattern": "app/Models",
-                "script": "function run(data) {\n    const castManager = data.project.getPreset('CastPHP').propertyManager\n    const typeManager = data.project.getPreset('FieldType').propertyManager\n    data.phptype = field => {\n        if (field.cast) {\n            const found = castManager.find(field.cast)\n            if (found) {\n                return found.value\n            }\n        }\n\n        if (['created_at', 'updated_at', 'deleted_at'].includes(field.name)) {\n            return '\\\\Illuminate\\\\Support\\\\Carbon'\n        }\n\n        const found = typeManager.find(field.type)\n        if (found) {\n            return found.tag\n        }\n\n        return 'mixed'\n    }\n\n    data.ruleText = field => {\n        if (field.ruleManager.list.length) {\n            const list = field.ruleManager.list.map(rule => {\n                return rule.value ? `${rule.name}:${rule.value}` : rule.name\n            })\n            return `['${list.join(\"', '\")}']`\n        }\n        return '[]'\n    }\n\n    data.factory= data.project.getLayer('DBFactory')\n}\n",
+                "script": "function run(data) {\n    const castManager = data.project.getPreset('CastPHP').propertyManager\n    const typeManager = data.project.getPreset('FieldType').propertyManager\n    data.phptype = field => {\n        if (field.cast) {\n            const found = castManager.find(field.cast)\n            if (found) {\n                return found.value\n            }\n        }\n\n        if (['created_at', 'updated_at', 'deleted_at'].includes(field.name)) {\n            return '\\\\Illuminate\\\\Support\\\\Carbon'\n        }\n\n        const found = typeManager.find(field.type)\n        if (found) {\n            return found.tag\n        }\n\n        return 'mixed'\n    }\n\n    data.factory= data.project.getLayer('DBFactory')\n}\n",
                 "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Notifications\\Notifiable;\nuse Illuminate\\Foundation\\Auth\\User as Authenticatable;\nuse Illuminate\\Database\\Eloquent\\Model;\nuse Illuminate\\Database\\Eloquent\\Factories\\HasFactory;\nuse Dyrynda\\Database\\Support\\GeneratesUuid;\n\n/**\n * Class {{ layer.getClassName(entity) }}\n * @package {{ layer.getNameSpace(project, entity) }}\n * {% for field in entity.fieldManager.list %} \n * @property {{ phptype(field) }} ${{ field.name }}{% endfor %}\n */\nclass {{ layer.getClassName(entity) }} extends {% if entity.name === 'User' %}Authenticatable{% else %}Model{% endif %}\n{\n    use HasFactory, GeneratesUuid;\n\n    protected $table = '{{ entity.tableName }}';\n\n    protected $primaryKey = '{{ entity.primaryKey }}';\n\n    public $incrementing = {{ entity.fieldManager.hasIncrement }};\n\n    public $timestamps = {{ entity.hasTimeStamp}};\n\n    protected $keyType = 'string';\n\n    protected static function newFactory(): {{factory.getClassName(entity)}}\n    {\n        return {{factory.getClassName(entity)}}::new();\n    }\n\n    public function uuidColumn(): string\n    {\n        return 'id';\n    }\n\n    protected $fillable = [ {% for field in entity.fieldManager.list | selectattr('fillable') %}\n        '{{ field.name }}', {% endfor %}\n    ];\n\n    protected $hidden = [ {% for field in entity.fieldManager.list | selectattr('hidden') %}\n        '{{ field.name }}', {% endfor %}\n    ];\n\n    protected $casts = [ {% for field in entity.fieldManager.list | selectattr('cast') %}\n        '{{ field.name }}' => '{{ field.cast }}', {% endfor %}\n    ];\n{% for relation in entity.relationManager.list %}\n    public function {{ relation.name }}()\n    {\n        return $this->{{ relation.type }}({{ relation.parameter }});\n    }{% endfor %}\n}\n",
                 "dataManager": {
                     "list": []
@@ -261,7 +261,7 @@
                 }
             },
             {
-                "name": "Request",
+                "name": "StoreRequest",
                 "original": false,
                 "single": false,
                 "description": "",
@@ -269,8 +269,8 @@
                 "filePattern": "Store${entity.name}Request.php",
                 "nsPattern": "${project.ns}\\Http\\Requests",
                 "pathPattern": "app/Http/Requests",
-                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n}\n",
-                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\nclass {{ layer.getClassName(entity) }} extends FormRequest\n{\n    public function rules()\n    {\n        return [ {% for field in entity.fieldManager.list | selectattr('included') %}\n                    '{{ field.name }}' => {{ ruleText(field) }},{% endfor %}\n        ];\n    }\n}\n",
+                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n\n    data.ruleTextStore = field => { \n        if (field.ruleManager.list.length) {\n            const list = field.ruleManager.list.map(rule => {\n                return rule.value ? `${rule.name}:${rule.value}` : rule.name\n            })\n            return `['${list.join(\"', '\")}']`\n        }\n        return '[]'\n    }\n}\n",
+                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\n/**\n * @OA\\Schema(\n *     schema=\"{{ model.getClassName(entity)}}StoreRequest\",\n *     title=\"Request for create {{ model.getClassName(entity)}} entity\", {% for field in entity.fieldManager.list | selectattr('included') %}\n *     @OA\\Property(property=\"{{ field.name }}\", type=\"{{field.type}}\", description=\"{{ field.comment }}\", example=\"\"),{% endfor %}\n * )\n */\nclass {{ layer.getClassName(entity) }} extends FormRequest\n{\n    public function rules()\n    {\n        return [ {% for field in entity.fieldManager.list | selectattr('included') %}\n                '{{ field.name }}' => {{ ruleTextStore(field) }},{% endfor %}\n        ];\n    }\n}\n",
                 "dataManager": {
                     "list": []
                 }
@@ -284,8 +284,8 @@
                 "filePattern": "${entity.name}Resource.php",
                 "nsPattern": "${project.ns}\\Http\\Resources",
                 "pathPattern": "app/Http/Resources",
-                "script": "function run(data) {\n}\n",
-                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Http\\Resources\\Json\\JsonResource;\n\nclass {{ layer.getClassName(entity) }} extends JsonResource\n{\n    /**\n     * Transform the resource into an array.\n     *\n     * @param \\Illuminate\\Http\\Request $request\n     * @return array\n     */\n    public function toArray($request)\n    {\n        return [ {% for field in entity.fieldManager.list %}{% if field.hidden === false %}\n            '{{ field.name }}' => $this->{{ field.name }},{% endif %}{% endfor %}\n        ];\n    }\n}\n",
+                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n}\n",
+                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Http\\Resources\\Json\\JsonResource;\n\n/**\n * @OA\\Schema(\n *     schema=\"{{ model.getClassName(entity)}}Resource\",\n *     title=\"Response for {{ model.getClassName(entity)}} entity\", {% for field in entity.fieldManager.list %}{% if field.hidden === false %}\n *     @OA\\Property(property=\"{{ field.name }}\", type=\"{{field.type}}\", description=\"{{ item.comment }}\", example=\"\"),{% endif %}{% endfor %}\n * )\n */\nclass {{ layer.getClassName(entity) }} extends JsonResource\n{\n    public function toArray($request)\n    {\n        return [ {% for field in entity.fieldManager.list %}{% if field.hidden === false %}\n            '{{ field.name }}' => $this->{{ field.name }},{% endif %}{% endfor %}\n        ];\n    }\n}\n",
                 "dataManager": {
                     "list": []
                 }
@@ -316,6 +316,21 @@
                 "pathPattern": "",
                 "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n    data.controller= data.project.getLayer('ControllerAPI')\n}",
                 "template": "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\nuse {{ controller.getFullName(project, entity) }};\n\nRoute::group(['middleware' => 'auth:sanctum', 'prefix' => 'api/{{ entity.tableName }}'], function() {\n    Route::get('/', [{{ controller.getClassName(entity)}}, 'index']);\n    Route::get('/{{'{'}}{{ model.getClassName(entity) | lower}}}', [{{ controller.getClassName(entity)}}, 'show']);\n    Route::post('/', [{{ controller.getClassName(entity)}}, 'store']);\n    Route::put('/{{'{'}}{{ model.getClassName(entity) | lower}}}', [{{ controller.getClassName(entity)}}, 'update']);\n    Route::delete('/{{'{'}}{{ model.getClassName(entity) | lower}}}', [{{ controller.getClassName(entity)}}, 'delete']);\n});",
+                "dataManager": {
+                    "list": []
+                }
+            },
+            {
+                "name": "UpdateRequest",
+                "original": false,
+                "single": false,
+                "description": "",
+                "classPattern": "Update${entity.name}Request",
+                "filePattern": "Update${entity.name}Request.php",
+                "nsPattern": "${project.ns}\\Http\\Requests",
+                "pathPattern": "app/Http/Requests",
+                "script": "function run(data) {\n    data.model = data.project.getLayer('Model')\n    data.ruleTextUpdate = field => {\n        if (field.ruleManager.list.length) {\n            const list = field.ruleManager.list.map((rule, index) => {\n                if (rule.name== 'required') {\n                     return null\n                }\n                return rule.value ? `${rule.name}:${rule.value}` : rule.name\n            })\n            return `['${list.filter(x => !!x).join(\"', '\")}']`\n        }\n        return '[]'\n    }\n}\n",
+                "template": "<?php\n\nnamespace {{ layer.getNameSpace(project, entity) }};\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\n/**\n * @OA\\Schema(\n *     schema=\"{{ model.getClassName(entity)}}StoreRequest\",\n *     title=\"Request for create {{ model.getClassName(entity)}} entity\", {% for field in entity.fieldManager.list | selectattr('included') %}\n *     @OA\\Property(property=\"{{ field.name }}\", type=\"{{field.type}}\", description=\"{{ field.comment }}\", example=\"\"),{% endfor %}\n * )\n */\nclass {{ layer.getClassName(entity) }} extends FormRequest\n{\n    public function rules()\n    {\n        return [ {% for field in entity.fieldManager.list | selectattr('included') %}\n                '{{ field.name }}' => {{ ruleTextUpdate(field) }},{% endfor %}\n        ];\n    }\n}\n",
                 "dataManager": {
                     "list": []
                 }
