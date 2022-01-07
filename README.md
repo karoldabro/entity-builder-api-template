@@ -7,7 +7,8 @@ Template for [Entity builder](https://github.com/GooGee/Entity-Builder) that cre
 4. Migration
 5. Repository
 6. Resource
-7. API test
+7. Store and update requests
+8. API test
 ## Usage
 1. [Start Entity builder](https://github.com/GooGee/Entity-Builder#project-setup)
 2. Open localhost:8080
